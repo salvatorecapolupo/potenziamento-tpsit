@@ -55,4 +55,4 @@ Non è richiesta alcuna installazione, build process (Webpack/Vite) o server bac
 ### Esecuzione Rapida
 Basta fare doppio click sul file:
 ```bash
-open converter.html
+chrome index.html
