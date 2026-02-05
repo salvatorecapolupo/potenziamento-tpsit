@@ -212,7 +212,7 @@ const LEVELS = [
         rank: "Cryptographer",
         story: "Hai trovato un messaggio lasciato da un admin. È una sequenza di byte Hex che rappresentano caratteri ASCII. Usa la tabella per leggere il messaggio.",
         type: "ASCII",
-        hint: "Cerca ogni coppia esadecimale nella tabella (colonne e righe) per trovare la lettera.",
+        hint: "Coordinate Hex: cerca la PRIMA cifra nelle colonne in alto e la SECONDA cifra nelle righe a sinistra. Cerca ogni coppia esadecimale nella tabella (colonne e righe) per trovare la lettera.",
         words: ["ROOT", "USER", "PASS", "BIOS", "BOOT", "NULL"],
         generate: function() { return this.words[Math.floor(Math.random() * this.words.length)]; },
         formatPrompt: (val) => {
@@ -392,7 +392,7 @@ const Game = {
         this.ui.title.innerText = "SISTEMA CONQUISTATO";
         this.ui.story.innerHTML = `
             <h1 style="color:var(--accent); text-align:center">COMPLETED</h1>
-            <p style="text-align:center">Hai dimostrato una comprensione superiore dei protocolli low-level.</p>
+            <p style="text-align:center">Hai dimostrato una conoscenza superiore dei formati low-level.</p>
             <p style="text-align:center; font-size:1.5rem">Punteggio Finale: ${this.xp} XP</p>
             <div style="text-align:center; margin-top:30px">
                 <button onclick="location.reload()">REBOOT SYSTEM</button>
