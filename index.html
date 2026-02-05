@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title> Convertitore universale </title>
+    <style>
+        /* CSS Moderno e Minimalista 
+           Usa variabili CSS per coerenza e Flexbox/Grid per il layout.
+        */
+        :root {
+            --primary: #3b82f6; /* Blu moderno */
+            --bg: #f8fafc;      /* Grigio molto chiaro */
+            --card-bg: #ffffff;
+            --text: #1e293b;
+            --border: #e2e8f0;
+        }
+
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            display: flex;
+            justify-content: center;
+            padding: 20px;
+            margin: 0;
+        }
+
+        main {
+            width: 100%;
+            max-width: 800px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        /* Stile delle "Card" per ogni sezione */
+        section {
+            background: var(--card-bg);
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            border: 1px solid var(--border);
+        }
+
+        h2 {
+            margin-top: 0;
+            color: var(--primary);
+            font-size: 1.25rem;
+            border-bottom: 2px solid var(--bg);
+            padding-bottom: 10px;
+        }
+
+        /* Layout dei controlli */
+        .control-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            font-weight: 600;
+            font-size: 0.9rem;
+            margin-bottom: 5px;
+        }
+
+        /* Input stilizzati */
+        input, textarea, select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-family: 'Courier New', monospace; /* Monospace per allineare i numeri/bit */
+            font-size: 1rem;
+            box-sizing: border-box; /* Gestione corretta del padding */
+            transition: border-color 0.2s;
+        }
+
+        input:focus, textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        .row {
+            display: grid;
+            grid-template-columns: 3fr 1fr; /* 3 parti per il valore, 1 per la base */
+            gap: 10px;
+        }
+        
+        .bits-display {
+            font-size: 0.85rem;
+            color: #64748b;
+            margin-top: 5px;
+            letter-spacing: 1px;
+        }
+        
+        /* Utility per evidenziare le parti IEEE 754 */
+        .sign { color: #ef4444; font-weight: bold; }
+        .exp { color: #eab308; font-weight: bold; }
+        .mant { color: #3b82f6; font-weight: bold; }
+
+    </style>
+</head>
+<body>
+
+<main>
+    <section id="base-converter">
+        <h2>1. Conversione Basi Numeriche (2 - 36)</h2>
+        <p style="font-size: 0.9rem; color: #666;">
+            Modifica uno dei due valori; l'altro si aggiornerà automaticamente.
+        </p>
+        
+        <div class="control-group">
+            <label>Valore A (Input)</label>
+            <div class="row">
+                <input type="text" id="numInputA" placeholder="Es: 255">
+                <input type="number" id="baseInputA" value="10" min="2" max="36" title="Base">
+            </div>
+        </div>
+
+        <div class="control-group">
+            <label>Valore B (Output)</label>
+            <div class="row">
+                <input type="text" id="numInputB" placeholder="Es: FF">
+                <input type="number" id="baseInputB" value="16" min="2" max="36" title="Base">
+            </div>
+        </div>
+    </section>
+
+    <section id="text-converter">
+        <h2>2. Codifica Testo (Stringhe)</h2>
+        
+        <div class="control-group">
+            <label>Testo Normale (UTF-8)</label>
+            <textarea id="textPlain" rows="2" placeholder="Scrivi qualcosa..."></textarea>
+        </div>
+
+        <div class="control-group">
+            <label>Base64</label>
+            <textarea id="textBase64" rows="2" placeholder="Risultato Base64..."></textarea>
+        </div>
+
+        <div class="control-group">
+            <label>URL Encoded (Percent-encoding)</label>
+            <textarea id="textUrl" rows="2" placeholder="Risultato %20..."></textarea>
+        </div>
+    </section>
+
+    <section id="ieee-converter">
+        <h2>3. IEEE 754 (32-bit Floating Point)</h2>
+        
+        <div class="control-group">
+            <label>Numero Decimale (Float)</label>
+            <input type="number" id="floatInput" step="any" placeholder="Es: -12.5">
+        </div>
+
+        <div class="control-group">
+            <label>Rappresentazione Binaria (32 bit)</label>
+            <input type="text" id="binaryInput" maxlength="32" placeholder="00000000...">
+            <div class="bits-display" id="ieeeComponents">
+                <span class="sign">S</span> <span class="exp">Esponente</span> <span class="mant">Mantissa</span>
+            </div>
+        </div>
+    </section>
+</main>
+
+<script>
+    /**
+     * SCRIPT PRINCIPALE
+     * Organizzato in moduli funzionali per chiarezza e manutenzione.
+     */
+
+    // --- MODULO 1: CONVERSIONE BASI ---
+    (function initBaseConverter() {
+        const inputA = document.getElementById('numInputA');
+        const baseA = document.getElementById('baseInputA');
+        const inputB = document.getElementById('numInputB');
+        const baseB = document.getElementById('baseInputB');
+
+        // Funzione core di conversione
+        function update(source) {
+            try {
+                // Leggiamo le basi correnti
+                const bA = parseInt(baseA.value);
+                const bB = parseInt(baseB.value);
+
+                let decimalValue;
+
+                // Determiniamo la direzione della conversione
+                if (source === 'A') {
+                    // parseInt(string, radix) converte una stringa in un intero decimale
+                    decimalValue = parseInt(inputA.value, bA);
+                } else {
+                    decimalValue = parseInt(inputB.value, bB);
+                }
+
+                // Se il valore non è valido (NaN), puliamo l'altro campo e usciamo
+                if (isNaN(decimalValue)) {
+                    if(source === 'A') inputB.value = "";
+                    else inputA.value = "";
+                    return;
+                }
+
+                // .toString(radix) converte un decimale in stringa nella base target
+                // .toUpperCase() per rendere le lettere esadecimali più leggibili
+                if (source === 'A') {
+                    inputB.value = decimalValue.toString(bB).toUpperCase();
+                } else {
+                    inputA.value = decimalValue.toString(bA).toUpperCase();
+                }
+            } catch (e) {
+                console.error("Errore conversione basi:", e);
+            }
+        }
+
+        // Listener per aggiornamenti in tempo reale
+        // 'input' scatta ogni volta che si digita un carattere
+        inputA.addEventListener('input', () => update('A'));
+        baseA.addEventListener('input', () => update('A')); // Se cambio base A, ricalcolo B
+        inputB.addEventListener('input', () => update('B'));
+        baseB.addEventListener('input', () => update('B')); // Se cambio base B, ricalcolo A
+    })();
+
+
+    // --- MODULO 2: CONVERSIONE TESTO ---
+    (function initTextConverter() {
+        const plain = document.getElementById('textPlain');
+        const base64 = document.getElementById('textBase64');
+        const url = document.getElementById('textUrl');
+
+        // Helper per gestire Unicode in Base64 (btoa standard supporta solo ASCII)
+        function toBase64(str) {
+            return btoa(unescape(encodeURIComponent(str)));
+        }
+        function fromBase64(str) {
+            return decodeURIComponent(escape(atob(str)));
+        }
+
+        // Aggiorna da Plain Text
+        plain.addEventListener('input', () => {
+            const val = plain.value;
+            try {
+                base64.value = toBase64(val);
+                url.value = encodeURIComponent(val);
+            } catch(e) { base64.value = "Errore encoding"; }
+        });
+
+        // Aggiorna da Base64
+        base64.addEventListener('input', () => {
+            const val = base64.value;
+            try {
+                const decoded = fromBase64(val);
+                plain.value = decoded;
+                url.value = encodeURIComponent(decoded);
+            } catch(e) { 
+                // Ignora errori parziali durante la digitazione
+            }
+        });
+
+        // Aggiorna da URL Encoded
+        url.addEventListener('input', () => {
+            const val = url.value;
+            try {
+                const decoded = decodeURIComponent(val);
+                plain.value = decoded;
+                base64.value = toBase64(decoded);
+            } catch(e) { }
+        });
+    })();
+
+
+    // --- MODULO 3: IEEE 754 (32-BIT) ---
+    (function initIEEEConverter() {
+        const floatIn = document.getElementById('floatInput');
+        const binIn = document.getElementById('binaryInput');
+        const viz = document.getElementById('ieeeComponents');
+
+        // Creiamo un ArrayBuffer di 4 byte (32 bit)
+        // Questo è il metodo "Stato dell'arte" per manipolare bit crudi in JS
+        const buffer = new ArrayBuffer(4);
+        const view = new DataView(buffer);
+
+        // Funzione per visualizzare i componenti colorati (S E M)
+        function updateViz(binaryString) {
+            // Assicuriamoci che la stringa sia lunga 32 char riempiendo con zeri
+            const bits = binaryString.padStart(32, '0');
+            const sign = bits.substring(0, 1);
+            const exponent = bits.substring(1, 9);
+            const mantissa = bits.substring(9);
+
+            viz.innerHTML = `
+                <span class="sign" title="Segno (1 bit)">${sign}</span> 
+                <span class="exp" title="Esponente (8 bit)">${exponent}</span> 
+                <span class="mant" title="Mantissa (23 bit)">${mantissa}</span>
+            `;
+        }
+
+        // Da Decimale a Binario
+        floatIn.addEventListener('input', () => {
+            const val = parseFloat(floatIn.value);
+            if (isNaN(val)) {
+                binIn.value = "";
+                viz.innerHTML = "...";
+                return;
+            }
+
+            // Scriviamo il float nel buffer (posizione 0, littleEndian false per default)
+            view.setFloat32(0, val);
+            // Leggiamo i 32 bit come intero senza segno
+            const bitsAsInt = view.getUint32(0);
+            // Convertiamo in stringa binaria
+            const binaryString = bitsAsInt.toString(2).padStart(32, '0');
+            
+            binIn.value = binaryString;
+            updateViz(binaryString);
+        });
+
+        // Da Binario a Decimale
+        binIn.addEventListener('input', () => {
+            // Rimuoviamo spazi eventuali
+            let bits = binIn.value.replace(/\s/g, '');
+            
+            // Validazione base: permettiamo solo 0 e 1
+            if (/[^01]/.test(bits)) return; 
+
+            updateViz(bits);
+
+            // Se abbiamo 32 bit (o meno, parsiamo quello che c'è)
+            // parseInt gestisce la stringa base 2
+            const bitsAsInt = parseInt(bits, 2);
+            
+            // Scriviamo l'intero nel buffer
+            view.setUint32(0, bitsAsInt);
+            // Leggiamo come Float
+            const floatVal = view.getFloat32(0);
+            
+            floatIn.value = floatVal;
+        });
+    })();
+
+</script>
+
+</body>
+</html>
