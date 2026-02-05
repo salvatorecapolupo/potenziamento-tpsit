@@ -3,18 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>The Bitwise Dungeon: Codebreaker</title>
+    <title>The Bitwise Dungeon: Reloaded</title>
     <style>
-        /* --- CSS: Stile Cyberpunk / Terminale --- */
+        /* --- CSS: Cyberpunk Theme --- */
         :root {
-            --bg-color: #0d1117;
-            --terminal-bg: #161b22;
-            --text-main: #c9d1d9;
-            --accent: #00ff41; /* Verde Matrix */
+            --bg-color: #050505;
+            --terminal-bg: #101010;
+            --text-main: #e0e0e0;
+            --accent: #00ff41;       /* Verde Matrix */
             --accent-dim: #008f11;
-            --error: #ff4444;
-            --highlight: #f2cc60;
-            --font-mono: 'Courier New', Courier, monospace;
+            --secondary: #00e5ff;    /* Ciano Cyber */
+            --error: #ff3333;
+            --font-mono: 'Consolas', 'Monaco', monospace;
         }
 
         body {
@@ -26,123 +26,122 @@
             align-items: center;
             min-height: 100vh;
             margin: 0;
-            overflow-y: auto;
+            padding: 20px;
         }
 
         .game-container {
             width: 100%;
-            max-width: 900px;
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 20px;
-            padding: 20px;
+            max-width: 950px;
         }
 
-        /* HUD: Heads Up Display (Livello e XP) */
+        /* HUD Header */
         header {
             display: flex;
             justify-content: space-between;
             border-bottom: 2px solid var(--accent);
-            padding-bottom: 10px;
-            margin-bottom: 20px;
+            padding-bottom: 15px;
+            margin-bottom: 25px;
             text-transform: uppercase;
-            letter-spacing: 2px;
+            letter-spacing: 1.5px;
+            font-size: 0.9rem;
         }
 
-        .stat-box { font-weight: bold; }
-        .stat-value { color: var(--accent); }
+        .stat-val { color: var(--accent); font-weight: bold; }
 
-        /* Area Principale del Gioco */
+        /* Terminal Window */
         .terminal {
             background: var(--terminal-bg);
-            border: 1px solid #30363d;
-            border-radius: 8px;
-            padding: 20px;
-            box-shadow: 0 0 20px rgba(0, 255, 65, 0.1);
+            border: 1px solid #333;
+            border-radius: 4px;
+            padding: 30px;
+            box-shadow: 0 0 30px rgba(0, 255, 65, 0.05);
             position: relative;
         }
 
-        h2 { margin-top: 0; color: var(--highlight); }
+        h2 { margin: 0 0 15px 0; color: var(--secondary); font-size: 1.4rem; }
         
-        .story-text {
-            font-style: italic;
-            color: #8b949e;
-            margin-bottom: 20px;
+        .story-log {
+            color: #888;
             border-left: 3px solid var(--accent-dim);
-            padding-left: 10px;
+            padding-left: 15px;
+            margin-bottom: 30px;
+            font-style: italic;
         }
 
+        /* Challenge Display */
         .challenge-box {
-            font-size: 1.5rem;
-            text-align: center;
-            margin: 30px 0;
-            background: rgba(255,255,255,0.05);
+            background: rgba(255,255,255,0.03);
+            border: 1px dashed #444;
             padding: 20px;
-            border-radius: 6px;
+            text-align: center;
+            margin-bottom: 25px;
+            font-size: 1.8rem;
+            font-weight: bold;
+            letter-spacing: 2px;
         }
 
-        /* Input Area */
-        .input-zone {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
-        }
-
+        /* Input Zone */
+        .input-zone { display: flex; gap: 15px; margin-bottom: 25px; }
+        
         input {
             flex: 1;
-            background: #0d1117;
-            border: 1px solid var(--accent-dim);
+            background: #000;
+            border: 1px solid #444;
             color: var(--accent);
             font-family: var(--font-mono);
-            font-size: 1.2rem;
-            padding: 10px;
+            font-size: 1.3rem;
+            padding: 12px;
             outline: none;
         }
-        
-        input:focus { box-shadow: 0 0 10px rgba(0,255,65,0.3); border-color: var(--accent); }
+        input:focus { border-color: var(--accent); box-shadow: 0 0 8px rgba(0,255,65,0.2); }
 
         button {
             background: var(--accent-dim);
             color: #fff;
             border: none;
-            padding: 0 25px;
-            cursor: pointer;
-            font-family: var(--font-mono);
+            padding: 0 30px;
             font-weight: bold;
+            cursor: pointer;
             text-transform: uppercase;
-            transition: 0.2s;
+            font-family: var(--font-mono);
         }
-
         button:hover { background: var(--accent); color: #000; }
 
-        /* Pannello Spiegazione "Live" */
+        /* Live Explanation Area */
         .live-explain {
             background: #000;
-            border: 1px dashed #30363d;
+            border-top: 2px solid #222;
             padding: 15px;
             font-size: 0.9rem;
-            color: #a5d6ff;
-            min-height: 80px;
-            white-space: pre-wrap; /* Mantiene formattazione */
+            color: #ccc;
+            min-height: 60px;
         }
         
-        .step { margin-bottom: 5px; display: block; }
-        .math-highlight { color: var(--highlight); }
-        .bit-breakdown { display: flex; gap: 5px; justify-content: center; margin-top: 10px; }
-        .bit { padding: 5px; border: 1px solid #555; font-size: 0.8rem; text-align: center; min-width: 20px;}
-        .sign { border-color: #ff4444; color: #ff4444; }
-        .exp { border-color: #eab308; color: #eab308; }
-        .mant { border-color: #3b82f6; color: #3b82f6; }
+        .math { color: var(--secondary); }
+        .bit-row { display: flex; gap: 4px; justify-content: center; margin-top:10px; }
+        .bit-box { border:1px solid #555; padding:4px 8px; font-size:0.8rem; }
+        .bit-s { border-color: #ff4444; color:#ff4444; } /* Sign */
+        .bit-e { border-color: #ffd700; color:#ffd700; } /* Exp */
+        .bit-m { border-color: #00e5ff; color:#00e5ff; } /* Mantissa */
 
-        /* Animazioni feedback */
-        @keyframes shake {
-            0% { transform: translateX(0); }
-            25% { transform: translateX(-5px); }
-            50% { transform: translateX(5px); }
-            100% { transform: translateX(0); }
+        /* Immagine ASCII Helper */
+        #asciiHelper {
+            display: none; /* Nascosto di default */
+            margin-top: 20px;
+            text-align: center;
         }
-        .error-anim { animation: shake 0.4s ease-in-out; border-color: var(--error) !important; }
-        .success-anim { border-color: var(--accent) !important; box-shadow: 0 0 15px var(--accent); }
+        #asciiHelper img {
+            max-width: 100%;
+            height: auto;
+            background: #fff; /* Tabella nera su bianco */
+            padding: 5px;
+            border-radius: 4px;
+            opacity: 0.9;
+        }
+
+        /* Utility animations */
+        .shake { animation: shake 0.4s ease-in-out; border-color: var(--error) !important; }
+        @keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-5px)} 75%{transform:translateX(5px)} }
 
     </style>
 </head>
@@ -150,323 +149,261 @@
 
 <div class="game-container">
     <header>
-        <div class="stat-box">Livello: <span id="levelDisplay" class="stat-value">1</span>/4</div>
-        <div class="stat-box">Titolo: <span id="titleDisplay">Script Kiddie</span></div>
-        <div class="stat-box">XP: <span id="xpDisplay" class="stat-value">0</span></div>
+        <div>Livello: <span id="lvlDisplay" class="stat-val">1</span> / 4</div>
+        <div>Grado: <span id="rankDisplay">Novizio</span></div>
+        <div>XP: <span id="xpDisplay" class="stat-val">0</span></div>
     </header>
 
     <div class="terminal">
-        <h2 id="levelTitle">Caricamento Modulo...</h2>
-        <div id="storyText" class="story-text">Inizializzazione sistema...</div>
+        <h2 id="title">Inizializzazione...</h2>
+        <div id="story" class="story-log">...</div>
 
-        <div id="challengeDisplay" class="challenge-box">
-            [ In attesa ]
+        <div id="challenge" class="challenge-box"></div>
+        
+        <div id="asciiHelper">
+            <p style="font-size:0.8rem; color:#888;">// Riferimento Intercettato: Tabella US-ASCII</p>
+            <img src="https://upload.wikimedia.org/wikipedia/commons/c/cf/USASCII_code_chart.png" alt="ASCII Table">
         </div>
 
         <div class="input-zone">
-            <input type="text" id="playerInput" placeholder="Inserisci la decodifica..." autocomplete="off">
-            <button onclick="gameEngine.submitAnswer()" id="submitBtn">DECODIFICA</button>
+            <input type="text" id="userInput" placeholder="Inserisci soluzione..." autocomplete="off">
+            <button onclick="Game.checkAnswer()">INVIA DATI</button>
         </div>
 
-        <div class="live-explain" id="explanationArea">
-            <span style="color: #666;">// Inizia a digitare per vedere l'analisi in tempo reale...</span>
+        <div id="feedback" class="live-explain">
+            // In attesa di input...
         </div>
     </div>
 </div>
 
 <script>
 /**
- * ARCHITETTURA DEL GIOCO
- * - GameEngine: Gestisce lo stato globale (livello corrente, domande, validazione).
- * - LevelConfig: Definisce le regole e la generazione per ogni livello di difficoltà.
- * - UIController: Gestisce le spiegazioni in tempo reale nel DOM.
+ * THE BITWISE DUNGEON: RELOADED
+ * Un motore di gioco educativo per conversioni numeriche.
  */
 
-/* ---------------- CONFIGURAZIONE LIVELLI ---------------- */
+/* --- Configurazione Livelli --- */
 const LEVELS = [
     {
         id: 1,
-        title: "Il Cancello Binario",
-        rank: "Novizio",
-        story: "Sei di fronte al firewall esterno. Il sistema comunica solo in stati ON/OFF (Binario). Per passare, devi tradurre i loro segnali in numeri Decimali comprensibili.",
-        type: "BIN_TO_DEC",
-        // Genera un numero tra 5 e 31
-        generate: () => Math.floor(Math.random() * 26) + 5, 
-        prompt: (val) => `Traduci: ${val.toString(2)} (Base 2)`,
-        validate: (input, target) => parseInt(input) === target,
-        hint: "Moltiplica ogni bit '1' per la sua potenza di 2 (1, 2, 4, 8, 16...)"
+        title: "Binarizzazione",
+        rank: "Script Kiddie",
+        story: "Il gatekeeper parla solo in logica booleana. Converti il flusso binario in un numero decimale per aprire la porta.",
+        type: "BIN_DEC",
+        hint: "Somma le potenze di 2 dove vedi '1' (1, 2, 4, 8, 16...).",
+        generate: () => Math.floor(Math.random() * 26) + 6, // Num tra 6 e 31
+        formatPrompt: (val) => `Binary: ${val.toString(2)}`,
+        check: (input, target) => parseInt(input) === target
     },
     {
         id: 2,
-        title: "La Stanza Esadecimale",
-        rank: "Hacker",
-        story: "Hai superato il firewall. Ora sei nella memoria centrale. Gli indirizzi sono compatti, scritti in Base 16. Converti questo indirizzo Hex in Decimale per trovare il payload.",
-        type: "HEX_TO_DEC",
-        // Genera un numero tra 30 e 255
-        generate: () => Math.floor(Math.random() * 225) + 30,
-        prompt: (val) => `Decodifica: 0x${val.toString(16).toUpperCase()}`,
-        validate: (input, target) => parseInt(input) === target,
-        hint: "Le cifre sono 0-9 e A-F (A=10... F=15). Moltiplica per potenze di 16."
+        title: "Hex Dump Parsing",
+        rank: "White Hat",
+        story: "Sei dentro. La memoria è indirizzata in esadecimale per risparmiare spazio. Traduci l'indirizzo Hex in decimale.",
+        type: "HEX_DEC",
+        hint: "A=10, B=11 ... F=15. Moltiplica la prima cifra per 16 e aggiungi la seconda.",
+        generate: () => Math.floor(Math.random() * 200) + 20, // Num tra 20 e 220
+        formatPrompt: (val) => `Hex: 0x${val.toString(16).toUpperCase()}`,
+        check: (input, target) => parseInt(input) === target
     },
     {
         id: 3,
-        title: "Il Ponte Base64",
-        rank: "SysAdmin",
-        story: "Stai intercettando un pacchetto dati cifrato. È una stringa codificata in Base64. Devi decodificare il messaggio segreto (ASCII) per procedere.",
-        type: "B64_TO_ASCII",
-        words: ["CIAO", "CODE", "BIT", "DATA", "KEY", "WEB"],
+        title: "Decodifica ASCII",
+        rank: "Cryptographer",
+        story: "Hai trovato un messaggio lasciato da un admin. È una sequenza di byte Hex che rappresentano caratteri ASCII. Usa la tabella per leggere il messaggio.",
+        type: "ASCII",
+        hint: "Cerca ogni coppia esadecimale nella tabella (colonne e righe) per trovare la lettera.",
+        words: ["ROOT", "USER", "PASS", "BIOS", "BOOT", "NULL"],
         generate: function() { return this.words[Math.floor(Math.random() * this.words.length)]; },
-        prompt: (val) => `Decifra stringa: "${btoa(val)}"`,
-        validate: (input, target) => input.trim().toUpperCase() === target,
-        hint: "Ogni carattere Base64 rappresenta 6 bit. Raggruppali per formare byte da 8 bit (ASCII)."
+        formatPrompt: (val) => {
+            // Converte la parola in stringa di codici Hex (es: "52 4F 4F 54")
+            let hexStr = "";
+            for(let i=0; i<val.length; i++) {
+                hexStr += val.charCodeAt(i).toString(16).toUpperCase() + " ";
+            }
+            return `Msg: ${hexStr.trim()}`;
+        },
+        check: (input, target) => input.trim().toUpperCase() === target
     },
     {
         id: 4,
-        title: "Il Nucleo IEEE 754",
-        rank: "Architect",
-        story: "BOSS FIGHT. Sei nel nucleo della CPU. Qui i numeri non sono interi, sono Floating Point. Il sistema ti dà un numero decimale; devi calcolare il SEGNO (0/1) e l'ESPONENTE (in decimale) grezzo.",
-        type: "IEEE_ANALYSIS",
-        // Genera numeri tipo 12.5, -5.0, 3.25 che hanno rappresentazioni pulite
+        title: "Il Core IEEE 754",
+        rank: "Bit Wizard",
+        story: "Sei nel nucleo matematico. I numeri sono float a 32-bit. Inserisci il valore del bit di SEGNO e il valore decimale dell'ESPONENTE.",
+        type: "IEEE",
+        hint: "Formato: 'SEGNO, ESPONENTE'. Ricorda: Esponente Binario - Bias (127) non serve qui, voglio il valore raw (0-255).",
         generate: () => {
-            const signs = [1, -1];
-            const bases = [2, 4, 8, 16, 32];
-            const fractions = [0, 0.5, 0.25];
-            return signs[Math.floor(Math.random()*2)] * (bases[Math.floor(Math.random()*5)] + fractions[Math.floor(Math.random()*3)]);
+            // Genera float semplici (es: -12.0, 4.5)
+            const s = Math.random() > 0.5 ? 1 : -1;
+            const bases = [2, 4, 8, 16];
+            return s * (bases[Math.floor(Math.random()*bases.length)] + (Math.random() > 0.5 ? 0.5 : 0));
         },
-        prompt: (val) => `Analizza Float: ${val}`,
-        // Richiede input formato "S, E" es: "1, 130"
-        validate: (input, targetVal) => {
-            // Logica complessa IEEE nascosta qui
+        formatPrompt: (val) => `Float: ${val}`,
+        check: (input, target) => {
+            // Estrazione reale dei bit
             const view = new DataView(new ArrayBuffer(4));
-            view.setFloat32(0, targetVal);
+            view.setFloat32(0, target);
             const bits = view.getUint32(0).toString(2).padStart(32, '0');
+            const realSign = bits[0];
+            const realExp = parseInt(bits.substring(1, 9), 2);
             
-            const signBit = bits[0];
-            const expBits = bits.substring(1, 9);
-            const expDec = parseInt(expBits, 2);
-
-            // L'utente deve scrivere "segno, esponente" es: "0, 130"
-            const parts = input.split(',').map(s => s.trim());
-            if(parts.length !== 2) return false;
-            return parts[0] === signBit && parts[1] == expDec;
-        },
-        hint: "Formato richiesto: 'SEGNO, ESPONENTE_DECIMALE'. Es: 0, 130. Ricorda il Bias 127!"
+            // Parsing input utente "S, E"
+            const parts = input.split(/[, ]+/); // Split su virgola o spazio
+            if(parts.length < 2) return false;
+            return parts[0] === realSign && parseInt(parts[1]) === realExp;
+        }
     }
 ];
 
-/* ---------------- LOGICA DI SPIEGAZIONE DINAMICA ---------------- */
-const Explainer = {
-    // Spiega Binario -> Decimale mentre digiti
-    explainBinToDec: (inputVal) => {
-        // Pulizia input non binari
-        const clean = inputVal.replace(/[^01]/g, '');
-        if (!clean) return "In attesa di cifre binarie (0 o 1)...";
-        
-        let html = `<div class="step">Interpretazione Binaria: <strong>${clean}</strong></div>`;
-        let total = 0;
-        const len = clean.length;
-        
-        let calcStr = "";
-        
-        for(let i=0; i<len; i++) {
-            const bit = parseInt(clean[i]);
-            const power = len - 1 - i;
-            const val = bit * Math.pow(2, power);
-            total += val;
-            
-            if(bit === 1) {
-                calcStr += `(1 × 2<sup>${power}</sup>) + `;
-            }
-        }
-        
-        // Rimuovi l'ultimo " + "
-        if(calcStr.endsWith(" + ")) calcStr = calcStr.slice(0, -3);
-        if(calcStr === "") calcStr = "0";
+/* --- Game Engine --- */
+const Game = {
+    currLevel: 0,
+    currTarget: null,
+    xp: 0,
 
-        html += `<div class="step math-highlight">${calcStr} = ${total}</div>`;
-        html += `<br>Stai dicendo che il risultato è <strong>${total}</strong>?`;
-        return html;
+    // UI References
+    ui: {
+        lvl: document.getElementById('lvlDisplay'),
+        rank: document.getElementById('rankDisplay'),
+        xp: document.getElementById('xpDisplay'),
+        title: document.getElementById('title'),
+        story: document.getElementById('story'),
+        box: document.getElementById('challenge'),
+        input: document.getElementById('userInput'),
+        feedback: document.getElementById('feedback'),
+        ascii: document.getElementById('asciiHelper')
     },
 
-    // Spiega Hex -> Decimale
-    explainHexToDec: (inputVal) => {
-        const clean = inputVal.trim().toUpperCase();
-        if(!clean) return "Scrivi il numero decimale che corrisponde all'Hex...";
-        
-        // L'utente sta scrivendo il risultato DECIMALE, noi dobbiamo aiutarlo
-        // a capire se corrisponde. Ma per un quiz, è meglio mostrare come si calcola
-        // il target originale se l'utente sbaglia, o "parsing" dell'input utente.
-        // Qui facciamo reverse engineering semplice: mostriamo cosa ha scritto l'utente.
-        
-        if (/[^0-9]/.test(clean)) return "Devi inserire il risultato in Decimale (solo numeri).";
-        
-        return `Stai inserendo: <strong>${clean}</strong> in base 10.`;
-    },
-
-    explainIEEE: (inputVal, targetVal) => {
-        // Mostra il target in bit veri per aiutare
-        const view = new DataView(new ArrayBuffer(4));
-        view.setFloat32(0, targetVal);
-        const bits = view.getUint32(0).toString(2).padStart(32, '0');
-        const s = bits[0];
-        const e = bits.substring(1, 9);
-        const m = bits.substring(9);
-        
-        let html = `Target (${targetVal}) in memoria grezza:`;
-        html += `<div class="bit-breakdown">
-            <span class="bit sign" title="Segno">${s}</span>
-            <span class="bit exp" title="Esponente">${e}</span>
-            <span class="bit mant" title="Mantissa">${m}</span>
-        </div>`;
-        html += `<div class="step" style="margin-top:10px">Devi estrarre: <strong>Segno (0/1)</strong> e <strong>Esponente (0-255)</strong>.</div>`;
-        html += `<div class="step">Tuo input: "${inputVal}"</div>`;
-        return html;
-    }
-};
-
-/* ---------------- GAME ENGINE ---------------- */
-class Game {
-    constructor() {
-        this.levelIndex = 0;
-        this.xp = 0;
-        this.currentTarget = null;
-        this.currentConfig = null;
-        
-        this.ui = {
-            lvl: document.getElementById('levelDisplay'),
-            title: document.getElementById('titleDisplay'),
-            xp: document.getElementById('xpDisplay'),
-            h2: document.getElementById('levelTitle'),
-            story: document.getElementById('storyText'),
-            challenge: document.getElementById('challengeDisplay'),
-            input: document.getElementById('playerInput'),
-            explain: document.getElementById('explanationArea')
-        };
-
-        // Binding evento input per spiegazioni live
-        this.ui.input.addEventListener('input', (e) => this.handleLiveInput(e.target.value));
-        
-        // Start
+    init: function() {
         this.loadLevel(0);
-    }
+        
+        // Listener per feedback in tempo reale
+        this.ui.input.addEventListener('input', (e) => this.explainLive(e.target.value));
+        
+        // Enter key
+        this.ui.input.addEventListener('keypress', (e) => {
+            if(e.key === 'Enter') this.checkAnswer();
+        });
+    },
 
-    loadLevel(idx) {
-        if (idx >= LEVELS.length) {
+    loadLevel: function(idx) {
+        if(idx >= LEVELS.length) {
             this.victory();
             return;
         }
+        this.currLevel = idx;
+        const cfg = LEVELS[idx];
 
-        this.levelIndex = idx;
-        this.currentConfig = LEVELS[idx];
-        
-        // Update UI statica
-        this.ui.lvl.innerText = this.currentConfig.id;
-        this.ui.title.innerText = this.currentConfig.rank;
-        this.ui.h2.innerText = `Livello ${this.currentConfig.id}: ${this.currentConfig.title}`;
-        this.ui.story.innerText = this.currentConfig.story;
+        // Update UI
+        this.ui.lvl.innerText = cfg.id;
+        this.ui.rank.innerText = cfg.rank;
+        this.ui.title.innerText = `Lvl ${cfg.id}: ${cfg.title}`;
+        this.ui.story.innerText = cfg.story;
         this.ui.input.value = "";
-        this.ui.explain.innerHTML = "// Sistema pronto. Analisi in attesa...";
+        this.ui.feedback.innerText = "// In attesa di dati...";
         
-        // Genera nuova sfida
-        this.currentTarget = this.currentConfig.generate();
-        this.ui.challenge.innerText = this.currentConfig.prompt(this.currentTarget);
-        
-        // Focus input
-        this.ui.input.focus();
-    }
+        // Gestione ASCII Image
+        this.ui.ascii.style.display = (cfg.type === "ASCII") ? "block" : "none";
 
-    handleLiveInput(val) {
-        const type = this.currentConfig.type;
+        // Generate puzzle
+        this.currTarget = cfg.generate();
+        this.ui.box.innerText = cfg.formatPrompt(this.currTarget);
+        this.ui.input.focus();
+    },
+
+    explainLive: function(val) {
+        const type = LEVELS[this.currLevel].type;
         let html = "";
 
-        // Logica di feedback differenziata per livello
-        if (type === "BIN_TO_DEC") {
-            // Qui l'utente deve inserire il Decimale.
-            // Aiutiamolo: Se il target è "101" (5), e l'utente scrive "5", è ok.
-            // Ma l'utente deve fare il calcolo.
-            // Spieghiamo il TARGET, non l'input utente.
-            const targetBin = this.currentTarget.toString(2);
-            html = `Analisi Target (<strong>${targetBin}</strong>):<br>`;
-            // Mostra scomposizione del target
-            let breakdown = [];
-            for(let i=0; i<targetBin.length; i++) {
-                if(targetBin[i] === '1') {
-                    breakdown.push(`2^${targetBin.length - 1 - i}`);
-                }
+        if (!val) { this.ui.feedback.innerHTML = "// ..."; return; }
+
+        if (type === "BIN_DEC") {
+            // Mostra scomposizione del target (aiuto didattico)
+            const bin = this.currTarget.toString(2);
+            let parts = [];
+            for(let i=0; i<bin.length; i++) {
+                if(bin[i] === '1') parts.push(`2^${bin.length-1-i}`);
             }
-            html += `<span class="math-highlight">${breakdown.join(' + ')}</span> = ?`;
-        } 
-        else if (type === "HEX_TO_DEC") {
-             const targetHex = this.currentTarget.toString(16).toUpperCase();
-             html = `Analisi Hex (0x${targetHex}):<br>`;
-             // Mostra scomposizione
-             let breakdown = [];
-             for(let i=0; i<targetHex.length; i++) {
-                 const char = targetHex[i];
-                 const val = parseInt(char, 16);
-                 breakdown.push(`(${char}=${val} × 16^${targetHex.length - 1 - i})`);
-             }
-             html += `<span class="math-highlight">${breakdown.join(' + ')}</span>`;
+            html = `Hint: ${bin} = <span class="math">${parts.join(' + ')}</span>`;
         }
-        else if (type === "B64_TO_ASCII") {
-            html = "Suggerimento: Usa un tool esterno o ricorda la tabella ASCII se sei coraggioso. Per ora, il sistema accetta solo la parola esatta.";
+        else if (type === "HEX_DEC") {
+            const hex = this.currTarget.toString(16).toUpperCase();
+            html = `Hint: 0x${hex} = `;
+            let parts = [];
+            for(let i=0; i<hex.length; i++) {
+                let digit = parseInt(hex[i], 16);
+                parts.push(`(${digit} × 16^${hex.length-1-i})`);
+            }
+            html += `<span class="math">${parts.join(' + ')}</span>`;
         }
-        else if (type === "IEEE_ANALYSIS") {
-            html = Explainer.explainIEEE(val, this.currentTarget);
+        else if (type === "ASCII") {
+            // Converte input utente in Hex live per mostrare la relazione
+            let hexOut = "";
+            for(let i=0; i<val.length; i++) {
+                hexOut += val.charCodeAt(i).toString(16).toUpperCase() + " ";
+            }
+            html = `Tuo input "${val}" in Hex: <span class="math">${hexOut}</span>`;
+        }
+        else if (type === "IEEE") {
+            // Visualizzatore bit per il target float
+            const view = new DataView(new ArrayBuffer(4));
+            view.setFloat32(0, this.currTarget);
+            const bits = view.getUint32(0).toString(2).padStart(32, '0');
+            
+            html = `Struttura Bit del Target (${this.currTarget}):
+            <div class="bit-row">
+                <span class="bit-box bit-s" title="Segno">${bits[0]}</span>
+                <span class="bit-box bit-e" title="Esponente 8-bit">${bits.substring(1,9)}</span>
+                <span class="bit-box bit-m" title="Mantissa">${bits.substring(9,16)}...</span>
+            </div>
+            <div style="margin-top:5px">Inserisci: Segno (0/1) , Esponente Decimale (0-255)</div>`;
         }
 
-        this.ui.explain.innerHTML = html;
-    }
+        this.ui.feedback.innerHTML = html;
+    },
 
-    submitAnswer() {
+    checkAnswer: function() {
         const val = this.ui.input.value;
-        if (!val) return;
+        const cfg = LEVELS[this.currLevel];
 
-        const isCorrect = this.currentConfig.validate(val, this.currentTarget);
-
-        if (isCorrect) {
-            // Animazione successo
-            this.ui.input.classList.add('success-anim');
-            this.ui.explain.innerHTML = `<span style="color:#00ff41">>> ACCESSO CONSENTITO. Compilazione riuscita.</span>`;
-            this.xp += 100 * (this.levelIndex + 1);
+        if(cfg.check(val, this.currTarget)) {
+            // Success
+            this.xp += 150 * (this.currLevel + 1);
             this.ui.xp.innerText = this.xp;
-
+            this.ui.feedback.innerHTML = "<strong style='color:var(--accent)'>>> MATCH CONFERMATO. Accesso livello successivo.</strong>";
+            this.ui.input.style.borderColor = "var(--accent)";
+            
             setTimeout(() => {
-                this.ui.input.classList.remove('success-anim');
-                this.loadLevel(this.levelIndex + 1);
-            }, 1500);
+                this.ui.input.style.borderColor = "#444";
+                this.loadLevel(this.currLevel + 1);
+            }, 1200);
         } else {
-            // Errore
-            this.ui.input.classList.add('error-anim');
-            this.ui.explain.innerHTML += `<br><br><span style="color:#ff4444">>> ERRORE: Checksum fallito. Riprova. <br>HINT: ${this.currentConfig.hint}</span>`;
-            setTimeout(() => this.ui.input.classList.remove('error-anim'), 500);
+            // Fail
+            this.ui.input.classList.add('shake');
+            this.ui.feedback.innerHTML = `<strong style="color:var(--error)">>> ERRORE DI PARSING.</strong><br>${cfg.hint}`;
+            setTimeout(() => this.ui.input.classList.remove('shake'), 500);
         }
-    }
-    
-    victory() {
-        this.ui.h2.innerText = "SISTEMA VIOLATO";
-        this.ui.story.innerHTML = "<strong style='color:gold'>Missione Compiuta.</strong> Hai dimostrato padronanza completa delle conversioni low-level.";
-        this.ui.challenge.style.display = 'none';
+    },
+
+    victory: function() {
+        this.ui.box.style.display = 'none';
         this.ui.input.style.display = 'none';
-        document.getElementById('submitBtn').style.display = 'none';
-        this.ui.explain.innerHTML = `
-            STATISTICHE FINALI:<br>
-            XP Totali: ${this.xp}<br>
-            Rank: GRANDMASTER BITWIZARD<br><br>
-            <button onclick="location.reload()">RIAVVIA SISTEMA</button>
+        this.ui.ascii.style.display = 'none';
+        this.ui.title.innerText = "SISTEMA CONQUISTATO";
+        this.ui.story.innerHTML = `
+            <h1 style="color:var(--accent); text-align:center">COMPLETED</h1>
+            <p style="text-align:center">Hai dimostrato una comprensione superiore dei protocolli low-level.</p>
+            <p style="text-align:center; font-size:1.5rem">Punteggio Finale: ${this.xp} XP</p>
+            <div style="text-align:center; margin-top:30px">
+                <button onclick="location.reload()">REBOOT SYSTEM</button>
+            </div>
         `;
+        this.ui.feedback.innerHTML = "// Sessione terminata.";
     }
-}
+};
 
-// Avvio Gioco
-const gameEngine = new Game();
-
-// Supporto tasto Enter
-document.getElementById('playerInput').addEventListener('keypress', function (e) {
-    if (e.key === 'Enter') {
-        gameEngine.submitAnswer();
-    }
-});
+// Start
+Game.init();
 
 </script>
 </body>
