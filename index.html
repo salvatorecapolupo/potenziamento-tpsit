@@ -3,342 +3,471 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title> Convertitore universale </title>
+    <title>The Bitwise Dungeon: Codebreaker</title>
     <style>
-        /* CSS Moderno e Minimalista 
-           Usa variabili CSS per coerenza e Flexbox/Grid per il layout.
-        */
+        /* --- CSS: Stile Cyberpunk / Terminale --- */
         :root {
-            --primary: #3b82f6; /* Blu moderno */
-            --bg: #f8fafc;      /* Grigio molto chiaro */
-            --card-bg: #ffffff;
-            --text: #1e293b;
-            --border: #e2e8f0;
+            --bg-color: #0d1117;
+            --terminal-bg: #161b22;
+            --text-main: #c9d1d9;
+            --accent: #00ff41; /* Verde Matrix */
+            --accent-dim: #008f11;
+            --error: #ff4444;
+            --highlight: #f2cc60;
+            --font-mono: 'Courier New', Courier, monospace;
         }
 
         body {
-            font-family: system-ui, -apple-system, sans-serif;
-            background-color: var(--bg);
-            color: var(--text);
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            font-family: var(--font-mono);
             display: flex;
             justify-content: center;
-            padding: 20px;
+            align-items: center;
+            min-height: 100vh;
             margin: 0;
+            overflow-y: auto;
         }
 
-        main {
+        .game-container {
             width: 100%;
-            max-width: 800px;
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-        }
-
-        /* Stile delle "Card" per ogni sezione */
-        section {
-            background: var(--card-bg);
-            padding: 25px;
-            border-radius: 12px;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-            border: 1px solid var(--border);
-        }
-
-        h2 {
-            margin-top: 0;
-            color: var(--primary);
-            font-size: 1.25rem;
-            border-bottom: 2px solid var(--bg);
-            padding-bottom: 10px;
-        }
-
-        /* Layout dei controlli */
-        .control-group {
-            margin-bottom: 15px;
-        }
-
-        label {
-            display: block;
-            font-weight: 600;
-            font-size: 0.9rem;
-            margin-bottom: 5px;
-        }
-
-        /* Input stilizzati */
-        input, textarea, select {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid var(--border);
-            border-radius: 6px;
-            font-family: 'Courier New', monospace; /* Monospace per allineare i numeri/bit */
-            font-size: 1rem;
-            box-sizing: border-box; /* Gestione corretta del padding */
-            transition: border-color 0.2s;
-        }
-
-        input:focus, textarea:focus {
-            outline: none;
-            border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-        }
-
-        .row {
+            max-width: 900px;
             display: grid;
-            grid-template-columns: 3fr 1fr; /* 3 parti per il valore, 1 per la base */
+            grid-template-columns: 1fr;
+            gap: 20px;
+            padding: 20px;
+        }
+
+        /* HUD: Heads Up Display (Livello e XP) */
+        header {
+            display: flex;
+            justify-content: space-between;
+            border-bottom: 2px solid var(--accent);
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .stat-box { font-weight: bold; }
+        .stat-value { color: var(--accent); }
+
+        /* Area Principale del Gioco */
+        .terminal {
+            background: var(--terminal-bg);
+            border: 1px solid #30363d;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 0 20px rgba(0, 255, 65, 0.1);
+            position: relative;
+        }
+
+        h2 { margin-top: 0; color: var(--highlight); }
+        
+        .story-text {
+            font-style: italic;
+            color: #8b949e;
+            margin-bottom: 20px;
+            border-left: 3px solid var(--accent-dim);
+            padding-left: 10px;
+        }
+
+        .challenge-box {
+            font-size: 1.5rem;
+            text-align: center;
+            margin: 30px 0;
+            background: rgba(255,255,255,0.05);
+            padding: 20px;
+            border-radius: 6px;
+        }
+
+        /* Input Area */
+        .input-zone {
+            display: flex;
             gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        input {
+            flex: 1;
+            background: #0d1117;
+            border: 1px solid var(--accent-dim);
+            color: var(--accent);
+            font-family: var(--font-mono);
+            font-size: 1.2rem;
+            padding: 10px;
+            outline: none;
         }
         
-        .bits-display {
-            font-size: 0.85rem;
-            color: #64748b;
-            margin-top: 5px;
-            letter-spacing: 1px;
+        input:focus { box-shadow: 0 0 10px rgba(0,255,65,0.3); border-color: var(--accent); }
+
+        button {
+            background: var(--accent-dim);
+            color: #fff;
+            border: none;
+            padding: 0 25px;
+            cursor: pointer;
+            font-family: var(--font-mono);
+            font-weight: bold;
+            text-transform: uppercase;
+            transition: 0.2s;
+        }
+
+        button:hover { background: var(--accent); color: #000; }
+
+        /* Pannello Spiegazione "Live" */
+        .live-explain {
+            background: #000;
+            border: 1px dashed #30363d;
+            padding: 15px;
+            font-size: 0.9rem;
+            color: #a5d6ff;
+            min-height: 80px;
+            white-space: pre-wrap; /* Mantiene formattazione */
         }
         
-        /* Utility per evidenziare le parti IEEE 754 */
-        .sign { color: #ef4444; font-weight: bold; }
-        .exp { color: #eab308; font-weight: bold; }
-        .mant { color: #3b82f6; font-weight: bold; }
+        .step { margin-bottom: 5px; display: block; }
+        .math-highlight { color: var(--highlight); }
+        .bit-breakdown { display: flex; gap: 5px; justify-content: center; margin-top: 10px; }
+        .bit { padding: 5px; border: 1px solid #555; font-size: 0.8rem; text-align: center; min-width: 20px;}
+        .sign { border-color: #ff4444; color: #ff4444; }
+        .exp { border-color: #eab308; color: #eab308; }
+        .mant { border-color: #3b82f6; color: #3b82f6; }
+
+        /* Animazioni feedback */
+        @keyframes shake {
+            0% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            50% { transform: translateX(5px); }
+            100% { transform: translateX(0); }
+        }
+        .error-anim { animation: shake 0.4s ease-in-out; border-color: var(--error) !important; }
+        .success-anim { border-color: var(--accent) !important; box-shadow: 0 0 15px var(--accent); }
 
     </style>
 </head>
 <body>
 
-<main>
-    <section id="base-converter">
-        <h2>1. Conversione Basi Numeriche (2 - 36)</h2>
-        <p style="font-size: 0.9rem; color: #666;">
-            Modifica uno dei due valori; l'altro si aggiornerà automaticamente.
-        </p>
-        
-        <div class="control-group">
-            <label>Valore A (Input)</label>
-            <div class="row">
-                <input type="text" id="numInputA" placeholder="Es: 255">
-                <input type="number" id="baseInputA" value="10" min="2" max="36" title="Base">
-            </div>
+<div class="game-container">
+    <header>
+        <div class="stat-box">Livello: <span id="levelDisplay" class="stat-value">1</span>/4</div>
+        <div class="stat-box">Titolo: <span id="titleDisplay">Script Kiddie</span></div>
+        <div class="stat-box">XP: <span id="xpDisplay" class="stat-value">0</span></div>
+    </header>
+
+    <div class="terminal">
+        <h2 id="levelTitle">Caricamento Modulo...</h2>
+        <div id="storyText" class="story-text">Inizializzazione sistema...</div>
+
+        <div id="challengeDisplay" class="challenge-box">
+            [ In attesa ]
         </div>
 
-        <div class="control-group">
-            <label>Valore B (Output)</label>
-            <div class="row">
-                <input type="text" id="numInputB" placeholder="Es: FF">
-                <input type="number" id="baseInputB" value="16" min="2" max="36" title="Base">
-            </div>
-        </div>
-    </section>
-
-    <section id="text-converter">
-        <h2>2. Codifica Testo (Stringhe)</h2>
-        
-        <div class="control-group">
-            <label>Testo Normale (UTF-8)</label>
-            <textarea id="textPlain" rows="2" placeholder="Scrivi qualcosa..."></textarea>
+        <div class="input-zone">
+            <input type="text" id="playerInput" placeholder="Inserisci la decodifica..." autocomplete="off">
+            <button onclick="gameEngine.submitAnswer()" id="submitBtn">DECODIFICA</button>
         </div>
 
-        <div class="control-group">
-            <label>Base64</label>
-            <textarea id="textBase64" rows="2" placeholder="Risultato Base64..."></textarea>
+        <div class="live-explain" id="explanationArea">
+            <span style="color: #666;">// Inizia a digitare per vedere l'analisi in tempo reale...</span>
         </div>
-
-        <div class="control-group">
-            <label>URL Encoded (Percent-encoding)</label>
-            <textarea id="textUrl" rows="2" placeholder="Risultato %20..."></textarea>
-        </div>
-    </section>
-
-    <section id="ieee-converter">
-        <h2>3. IEEE 754 (32-bit Floating Point)</h2>
-        
-        <div class="control-group">
-            <label>Numero Decimale (Float)</label>
-            <input type="number" id="floatInput" step="any" placeholder="Es: -12.5">
-        </div>
-
-        <div class="control-group">
-            <label>Rappresentazione Binaria (32 bit)</label>
-            <input type="text" id="binaryInput" maxlength="32" placeholder="00000000...">
-            <div class="bits-display" id="ieeeComponents">
-                <span class="sign">S</span> <span class="exp">Esponente</span> <span class="mant">Mantissa</span>
-            </div>
-        </div>
-    </section>
-</main>
+    </div>
+</div>
 
 <script>
-    /**
-     * SCRIPT PRINCIPALE
-     * Organizzato in moduli funzionali per chiarezza e manutenzione.
-     */
+/**
+ * ARCHITETTURA DEL GIOCO
+ * - GameEngine: Gestisce lo stato globale (livello corrente, domande, validazione).
+ * - LevelConfig: Definisce le regole e la generazione per ogni livello di difficoltà.
+ * - UIController: Gestisce le spiegazioni in tempo reale nel DOM.
+ */
 
-    // --- MODULO 1: CONVERSIONE BASI ---
-    (function initBaseConverter() {
-        const inputA = document.getElementById('numInputA');
-        const baseA = document.getElementById('baseInputA');
-        const inputB = document.getElementById('numInputB');
-        const baseB = document.getElementById('baseInputB');
+/* ---------------- CONFIGURAZIONE LIVELLI ---------------- */
+const LEVELS = [
+    {
+        id: 1,
+        title: "Il Cancello Binario",
+        rank: "Novizio",
+        story: "Sei di fronte al firewall esterno. Il sistema comunica solo in stati ON/OFF (Binario). Per passare, devi tradurre i loro segnali in numeri Decimali comprensibili.",
+        type: "BIN_TO_DEC",
+        // Genera un numero tra 5 e 31
+        generate: () => Math.floor(Math.random() * 26) + 5, 
+        prompt: (val) => `Traduci: ${val.toString(2)} (Base 2)`,
+        validate: (input, target) => parseInt(input) === target,
+        hint: "Moltiplica ogni bit '1' per la sua potenza di 2 (1, 2, 4, 8, 16...)"
+    },
+    {
+        id: 2,
+        title: "La Stanza Esadecimale",
+        rank: "Hacker",
+        story: "Hai superato il firewall. Ora sei nella memoria centrale. Gli indirizzi sono compatti, scritti in Base 16. Converti questo indirizzo Hex in Decimale per trovare il payload.",
+        type: "HEX_TO_DEC",
+        // Genera un numero tra 30 e 255
+        generate: () => Math.floor(Math.random() * 225) + 30,
+        prompt: (val) => `Decodifica: 0x${val.toString(16).toUpperCase()}`,
+        validate: (input, target) => parseInt(input) === target,
+        hint: "Le cifre sono 0-9 e A-F (A=10... F=15). Moltiplica per potenze di 16."
+    },
+    {
+        id: 3,
+        title: "Il Ponte Base64",
+        rank: "SysAdmin",
+        story: "Stai intercettando un pacchetto dati cifrato. È una stringa codificata in Base64. Devi decodificare il messaggio segreto (ASCII) per procedere.",
+        type: "B64_TO_ASCII",
+        words: ["CIAO", "CODE", "BIT", "DATA", "KEY", "WEB"],
+        generate: function() { return this.words[Math.floor(Math.random() * this.words.length)]; },
+        prompt: (val) => `Decifra stringa: "${btoa(val)}"`,
+        validate: (input, target) => input.trim().toUpperCase() === target,
+        hint: "Ogni carattere Base64 rappresenta 6 bit. Raggruppali per formare byte da 8 bit (ASCII)."
+    },
+    {
+        id: 4,
+        title: "Il Nucleo IEEE 754",
+        rank: "Architect",
+        story: "BOSS FIGHT. Sei nel nucleo della CPU. Qui i numeri non sono interi, sono Floating Point. Il sistema ti dà un numero decimale; devi calcolare il SEGNO (0/1) e l'ESPONENTE (in decimale) grezzo.",
+        type: "IEEE_ANALYSIS",
+        // Genera numeri tipo 12.5, -5.0, 3.25 che hanno rappresentazioni pulite
+        generate: () => {
+            const signs = [1, -1];
+            const bases = [2, 4, 8, 16, 32];
+            const fractions = [0, 0.5, 0.25];
+            return signs[Math.floor(Math.random()*2)] * (bases[Math.floor(Math.random()*5)] + fractions[Math.floor(Math.random()*3)]);
+        },
+        prompt: (val) => `Analizza Float: ${val}`,
+        // Richiede input formato "S, E" es: "1, 130"
+        validate: (input, targetVal) => {
+            // Logica complessa IEEE nascosta qui
+            const view = new DataView(new ArrayBuffer(4));
+            view.setFloat32(0, targetVal);
+            const bits = view.getUint32(0).toString(2).padStart(32, '0');
+            
+            const signBit = bits[0];
+            const expBits = bits.substring(1, 9);
+            const expDec = parseInt(expBits, 2);
 
-        // Funzione core di conversione
-        function update(source) {
-            try {
-                // Leggiamo le basi correnti
-                const bA = parseInt(baseA.value);
-                const bB = parseInt(baseB.value);
+            // L'utente deve scrivere "segno, esponente" es: "0, 130"
+            const parts = input.split(',').map(s => s.trim());
+            if(parts.length !== 2) return false;
+            return parts[0] === signBit && parts[1] == expDec;
+        },
+        hint: "Formato richiesto: 'SEGNO, ESPONENTE_DECIMALE'. Es: 0, 130. Ricorda il Bias 127!"
+    }
+];
 
-                let decimalValue;
-
-                // Determiniamo la direzione della conversione
-                if (source === 'A') {
-                    // parseInt(string, radix) converte una stringa in un intero decimale
-                    decimalValue = parseInt(inputA.value, bA);
-                } else {
-                    decimalValue = parseInt(inputB.value, bB);
-                }
-
-                // Se il valore non è valido (NaN), puliamo l'altro campo e usciamo
-                if (isNaN(decimalValue)) {
-                    if(source === 'A') inputB.value = "";
-                    else inputA.value = "";
-                    return;
-                }
-
-                // .toString(radix) converte un decimale in stringa nella base target
-                // .toUpperCase() per rendere le lettere esadecimali più leggibili
-                if (source === 'A') {
-                    inputB.value = decimalValue.toString(bB).toUpperCase();
-                } else {
-                    inputA.value = decimalValue.toString(bA).toUpperCase();
-                }
-            } catch (e) {
-                console.error("Errore conversione basi:", e);
+/* ---------------- LOGICA DI SPIEGAZIONE DINAMICA ---------------- */
+const Explainer = {
+    // Spiega Binario -> Decimale mentre digiti
+    explainBinToDec: (inputVal) => {
+        // Pulizia input non binari
+        const clean = inputVal.replace(/[^01]/g, '');
+        if (!clean) return "In attesa di cifre binarie (0 o 1)...";
+        
+        let html = `<div class="step">Interpretazione Binaria: <strong>${clean}</strong></div>`;
+        let total = 0;
+        const len = clean.length;
+        
+        let calcStr = "";
+        
+        for(let i=0; i<len; i++) {
+            const bit = parseInt(clean[i]);
+            const power = len - 1 - i;
+            const val = bit * Math.pow(2, power);
+            total += val;
+            
+            if(bit === 1) {
+                calcStr += `(1 × 2<sup>${power}</sup>) + `;
             }
         }
+        
+        // Rimuovi l'ultimo " + "
+        if(calcStr.endsWith(" + ")) calcStr = calcStr.slice(0, -3);
+        if(calcStr === "") calcStr = "0";
 
-        // Listener per aggiornamenti in tempo reale
-        // 'input' scatta ogni volta che si digita un carattere
-        inputA.addEventListener('input', () => update('A'));
-        baseA.addEventListener('input', () => update('A')); // Se cambio base A, ricalcolo B
-        inputB.addEventListener('input', () => update('B'));
-        baseB.addEventListener('input', () => update('B')); // Se cambio base B, ricalcolo A
-    })();
+        html += `<div class="step math-highlight">${calcStr} = ${total}</div>`;
+        html += `<br>Stai dicendo che il risultato è <strong>${total}</strong>?`;
+        return html;
+    },
 
+    // Spiega Hex -> Decimale
+    explainHexToDec: (inputVal) => {
+        const clean = inputVal.trim().toUpperCase();
+        if(!clean) return "Scrivi il numero decimale che corrisponde all'Hex...";
+        
+        // L'utente sta scrivendo il risultato DECIMALE, noi dobbiamo aiutarlo
+        // a capire se corrisponde. Ma per un quiz, è meglio mostrare come si calcola
+        // il target originale se l'utente sbaglia, o "parsing" dell'input utente.
+        // Qui facciamo reverse engineering semplice: mostriamo cosa ha scritto l'utente.
+        
+        if (/[^0-9]/.test(clean)) return "Devi inserire il risultato in Decimale (solo numeri).";
+        
+        return `Stai inserendo: <strong>${clean}</strong> in base 10.`;
+    },
 
-    // --- MODULO 2: CONVERSIONE TESTO ---
-    (function initTextConverter() {
-        const plain = document.getElementById('textPlain');
-        const base64 = document.getElementById('textBase64');
-        const url = document.getElementById('textUrl');
+    explainIEEE: (inputVal, targetVal) => {
+        // Mostra il target in bit veri per aiutare
+        const view = new DataView(new ArrayBuffer(4));
+        view.setFloat32(0, targetVal);
+        const bits = view.getUint32(0).toString(2).padStart(32, '0');
+        const s = bits[0];
+        const e = bits.substring(1, 9);
+        const m = bits.substring(9);
+        
+        let html = `Target (${targetVal}) in memoria grezza:`;
+        html += `<div class="bit-breakdown">
+            <span class="bit sign" title="Segno">${s}</span>
+            <span class="bit exp" title="Esponente">${e}</span>
+            <span class="bit mant" title="Mantissa">${m}</span>
+        </div>`;
+        html += `<div class="step" style="margin-top:10px">Devi estrarre: <strong>Segno (0/1)</strong> e <strong>Esponente (0-255)</strong>.</div>`;
+        html += `<div class="step">Tuo input: "${inputVal}"</div>`;
+        return html;
+    }
+};
 
-        // Helper per gestire Unicode in Base64 (btoa standard supporta solo ASCII)
-        function toBase64(str) {
-            return btoa(unescape(encodeURIComponent(str)));
+/* ---------------- GAME ENGINE ---------------- */
+class Game {
+    constructor() {
+        this.levelIndex = 0;
+        this.xp = 0;
+        this.currentTarget = null;
+        this.currentConfig = null;
+        
+        this.ui = {
+            lvl: document.getElementById('levelDisplay'),
+            title: document.getElementById('titleDisplay'),
+            xp: document.getElementById('xpDisplay'),
+            h2: document.getElementById('levelTitle'),
+            story: document.getElementById('storyText'),
+            challenge: document.getElementById('challengeDisplay'),
+            input: document.getElementById('playerInput'),
+            explain: document.getElementById('explanationArea')
+        };
+
+        // Binding evento input per spiegazioni live
+        this.ui.input.addEventListener('input', (e) => this.handleLiveInput(e.target.value));
+        
+        // Start
+        this.loadLevel(0);
+    }
+
+    loadLevel(idx) {
+        if (idx >= LEVELS.length) {
+            this.victory();
+            return;
         }
-        function fromBase64(str) {
-            return decodeURIComponent(escape(atob(str)));
-        }
 
-        // Aggiorna da Plain Text
-        plain.addEventListener('input', () => {
-            const val = plain.value;
-            try {
-                base64.value = toBase64(val);
-                url.value = encodeURIComponent(val);
-            } catch(e) { base64.value = "Errore encoding"; }
-        });
+        this.levelIndex = idx;
+        this.currentConfig = LEVELS[idx];
+        
+        // Update UI statica
+        this.ui.lvl.innerText = this.currentConfig.id;
+        this.ui.title.innerText = this.currentConfig.rank;
+        this.ui.h2.innerText = `Livello ${this.currentConfig.id}: ${this.currentConfig.title}`;
+        this.ui.story.innerText = this.currentConfig.story;
+        this.ui.input.value = "";
+        this.ui.explain.innerHTML = "// Sistema pronto. Analisi in attesa...";
+        
+        // Genera nuova sfida
+        this.currentTarget = this.currentConfig.generate();
+        this.ui.challenge.innerText = this.currentConfig.prompt(this.currentTarget);
+        
+        // Focus input
+        this.ui.input.focus();
+    }
 
-        // Aggiorna da Base64
-        base64.addEventListener('input', () => {
-            const val = base64.value;
-            try {
-                const decoded = fromBase64(val);
-                plain.value = decoded;
-                url.value = encodeURIComponent(decoded);
-            } catch(e) { 
-                // Ignora errori parziali durante la digitazione
+    handleLiveInput(val) {
+        const type = this.currentConfig.type;
+        let html = "";
+
+        // Logica di feedback differenziata per livello
+        if (type === "BIN_TO_DEC") {
+            // Qui l'utente deve inserire il Decimale.
+            // Aiutiamolo: Se il target è "101" (5), e l'utente scrive "5", è ok.
+            // Ma l'utente deve fare il calcolo.
+            // Spieghiamo il TARGET, non l'input utente.
+            const targetBin = this.currentTarget.toString(2);
+            html = `Analisi Target (<strong>${targetBin}</strong>):<br>`;
+            // Mostra scomposizione del target
+            let breakdown = [];
+            for(let i=0; i<targetBin.length; i++) {
+                if(targetBin[i] === '1') {
+                    breakdown.push(`2^${targetBin.length - 1 - i}`);
+                }
             }
-        });
-
-        // Aggiorna da URL Encoded
-        url.addEventListener('input', () => {
-            const val = url.value;
-            try {
-                const decoded = decodeURIComponent(val);
-                plain.value = decoded;
-                base64.value = toBase64(decoded);
-            } catch(e) { }
-        });
-    })();
-
-
-    // --- MODULO 3: IEEE 754 (32-BIT) ---
-    (function initIEEEConverter() {
-        const floatIn = document.getElementById('floatInput');
-        const binIn = document.getElementById('binaryInput');
-        const viz = document.getElementById('ieeeComponents');
-
-        // Creiamo un ArrayBuffer di 4 byte (32 bit)
-        // Questo è il metodo "Stato dell'arte" per manipolare bit crudi in JS
-        const buffer = new ArrayBuffer(4);
-        const view = new DataView(buffer);
-
-        // Funzione per visualizzare i componenti colorati (S E M)
-        function updateViz(binaryString) {
-            // Assicuriamoci che la stringa sia lunga 32 char riempiendo con zeri
-            const bits = binaryString.padStart(32, '0');
-            const sign = bits.substring(0, 1);
-            const exponent = bits.substring(1, 9);
-            const mantissa = bits.substring(9);
-
-            viz.innerHTML = `
-                <span class="sign" title="Segno (1 bit)">${sign}</span> 
-                <span class="exp" title="Esponente (8 bit)">${exponent}</span> 
-                <span class="mant" title="Mantissa (23 bit)">${mantissa}</span>
-            `;
+            html += `<span class="math-highlight">${breakdown.join(' + ')}</span> = ?`;
+        } 
+        else if (type === "HEX_TO_DEC") {
+             const targetHex = this.currentTarget.toString(16).toUpperCase();
+             html = `Analisi Hex (0x${targetHex}):<br>`;
+             // Mostra scomposizione
+             let breakdown = [];
+             for(let i=0; i<targetHex.length; i++) {
+                 const char = targetHex[i];
+                 const val = parseInt(char, 16);
+                 breakdown.push(`(${char}=${val} × 16^${targetHex.length - 1 - i})`);
+             }
+             html += `<span class="math-highlight">${breakdown.join(' + ')}</span>`;
+        }
+        else if (type === "B64_TO_ASCII") {
+            html = "Suggerimento: Usa un tool esterno o ricorda la tabella ASCII se sei coraggioso. Per ora, il sistema accetta solo la parola esatta.";
+        }
+        else if (type === "IEEE_ANALYSIS") {
+            html = Explainer.explainIEEE(val, this.currentTarget);
         }
 
-        // Da Decimale a Binario
-        floatIn.addEventListener('input', () => {
-            const val = parseFloat(floatIn.value);
-            if (isNaN(val)) {
-                binIn.value = "";
-                viz.innerHTML = "...";
-                return;
-            }
+        this.ui.explain.innerHTML = html;
+    }
 
-            // Scriviamo il float nel buffer (posizione 0, littleEndian false per default)
-            view.setFloat32(0, val);
-            // Leggiamo i 32 bit come intero senza segno
-            const bitsAsInt = view.getUint32(0);
-            // Convertiamo in stringa binaria
-            const binaryString = bitsAsInt.toString(2).padStart(32, '0');
-            
-            binIn.value = binaryString;
-            updateViz(binaryString);
-        });
+    submitAnswer() {
+        const val = this.ui.input.value;
+        if (!val) return;
 
-        // Da Binario a Decimale
-        binIn.addEventListener('input', () => {
-            // Rimuoviamo spazi eventuali
-            let bits = binIn.value.replace(/\s/g, '');
-            
-            // Validazione base: permettiamo solo 0 e 1
-            if (/[^01]/.test(bits)) return; 
+        const isCorrect = this.currentConfig.validate(val, this.currentTarget);
 
-            updateViz(bits);
+        if (isCorrect) {
+            // Animazione successo
+            this.ui.input.classList.add('success-anim');
+            this.ui.explain.innerHTML = `<span style="color:#00ff41">>> ACCESSO CONSENTITO. Compilazione riuscita.</span>`;
+            this.xp += 100 * (this.levelIndex + 1);
+            this.ui.xp.innerText = this.xp;
 
-            // Se abbiamo 32 bit (o meno, parsiamo quello che c'è)
-            // parseInt gestisce la stringa base 2
-            const bitsAsInt = parseInt(bits, 2);
-            
-            // Scriviamo l'intero nel buffer
-            view.setUint32(0, bitsAsInt);
-            // Leggiamo come Float
-            const floatVal = view.getFloat32(0);
-            
-            floatIn.value = floatVal;
-        });
-    })();
+            setTimeout(() => {
+                this.ui.input.classList.remove('success-anim');
+                this.loadLevel(this.levelIndex + 1);
+            }, 1500);
+        } else {
+            // Errore
+            this.ui.input.classList.add('error-anim');
+            this.ui.explain.innerHTML += `<br><br><span style="color:#ff4444">>> ERRORE: Checksum fallito. Riprova. <br>HINT: ${this.currentConfig.hint}</span>`;
+            setTimeout(() => this.ui.input.classList.remove('error-anim'), 500);
+        }
+    }
+    
+    victory() {
+        this.ui.h2.innerText = "SISTEMA VIOLATO";
+        this.ui.story.innerHTML = "<strong style='color:gold'>Missione Compiuta.</strong> Hai dimostrato padronanza completa delle conversioni low-level.";
+        this.ui.challenge.style.display = 'none';
+        this.ui.input.style.display = 'none';
+        document.getElementById('submitBtn').style.display = 'none';
+        this.ui.explain.innerHTML = `
+            STATISTICHE FINALI:<br>
+            XP Totali: ${this.xp}<br>
+            Rank: GRANDMASTER BITWIZARD<br><br>
+            <button onclick="location.reload()">RIAVVIA SISTEMA</button>
+        `;
+    }
+}
+
+// Avvio Gioco
+const gameEngine = new Game();
+
+// Supporto tasto Enter
+document.getElementById('playerInput').addEventListener('keypress', function (e) {
+    if (e.key === 'Enter') {
+        gameEngine.submitAnswer();
+    }
+});
 
 </script>
-
 </body>
 </html>
